@@ -34,3 +34,5 @@ testdata
 /build/
 .env
 storage
+/config
+
