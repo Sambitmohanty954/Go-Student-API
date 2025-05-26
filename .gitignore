@@ -32,3 +32,5 @@ testdata
 
 # Go build artifacts
 /build/
+.env
+storage
