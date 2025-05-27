@@ -33,6 +33,6 @@ testdata
 # Go build artifacts
 /build/
 .env
-storage
+/storage
 /config
 
