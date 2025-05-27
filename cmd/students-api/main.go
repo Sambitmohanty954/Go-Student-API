@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/Sambitmohanty954/students-api-golang/internal/config"
+	"github.com/Sambitmohanty954/students-api-golang/internal/http/handlers/student"
 	"log"
 	"log/slog"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-// go run cmd/students-api/main.go -config config/local.yaml  (to run this project)
+// go run cmd/student-api/main.go -config config/local.yaml  (to run this project)
 func main() {
 	// Load config
 	cfg := config.MustLoad()
@@ -21,9 +22,7 @@ func main() {
 	// setup Router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to the students API"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	// Setup server
 	httpServer := http.Server{
