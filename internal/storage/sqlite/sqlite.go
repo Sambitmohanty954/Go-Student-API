@@ -94,3 +94,50 @@ func (s *Sqlite) GetStudents() ([]types.Student, error) {
 	}
 	return students, nil
 }
+
+func (s *Sqlite) UpdateStudentFieldById(id int64, field string, value any) (int64, error) {
+	// Validate column names to prevent SQL injection
+	validFields := map[string]bool{
+		"name":  true,
+		"email": true,
+		"age":   true,
+	}
+	if !validFields[field] {
+		return 0, fmt.Errorf("invalid field name: %s", field)
+	}
+
+	query := fmt.Sprintf("UPDATE students SET %s = ? WHERE id = ?", field)
+
+	stmt, err := s.Db.Prepare(query)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(value, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.RowsAffected()
+}
+
+func (s *Sqlite) UpdateStudentById(id int64, student types.Student) (int64, error) {
+	stmt, err := s.Db.Prepare("UPDATE students SET name = ?, email = ?, age = ? WHERE id = ?")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(student.Name, student.Email, student.Age, id)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAffected, nil
+}

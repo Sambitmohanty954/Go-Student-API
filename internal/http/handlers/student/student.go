@@ -90,3 +90,64 @@ func GetList(storage storage.Storage) http.HandlerFunc {
 		response.WriteJson(w, http.StatusOK, students)
 	}
 }
+
+// Update one students
+func UpdateStudentById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		slog.Info("Updating student by id", slog.String("id", id))
+
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			slog.Error("Invalid student id", slog.Any("error", err))
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		var student types.Student
+		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
+			slog.Error("Failed to decode request body", slog.Any("error", err))
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		// Check which field is provided (only 1 allowed)
+		var field string
+		var value any
+
+		switch {
+		case student.Name != "":
+			field = "name"
+			value = student.Name
+		case student.Email != "":
+			field = "email"
+			value = student.Email
+		case student.Age != 0:
+			field = "age"
+			value = student.Age
+		default:
+			response.WriteJson(w, http.StatusBadRequest, fmt.Errorf("No updatable field provided"))
+			return
+		}
+
+		rowsAffected, err := storage.UpdateStudentFieldById(intId, field, value)
+		if err != nil {
+			slog.Error("Error updating student", slog.String("id", id), slog.Any("error", err))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		if rowsAffected == 0 {
+			response.WriteJson(w, http.StatusNotFound, fmt.Errorf("Student not found"))
+			return
+		}
+
+		updatedStudent, err := storage.GetStudentById(intId)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, updatedStudent)
+	}
+}
