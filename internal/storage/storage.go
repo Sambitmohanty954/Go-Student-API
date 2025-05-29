@@ -10,4 +10,5 @@ type Storage interface {
 	UpdateStudentById(id int64, student types.Student) (int64, error)
 	// NEW: For updating a single field
 	UpdateStudentFieldById(id int64, field string, value any) (int64, error)
+	DeleteStudentById(id int64) (int64, error)
 }
